@@ -1,0 +1,79 @@
+# new-api VPS 部署（方案 A：本地 build 二开源码）
+# 目录约定：
+#   /root/new-api/
+#   ├── docker-compose.yml   # 本文件
+#   ├── .env
+#   ├── data/
+#   ├── logs/
+#   └── new-api-fork/        # git clone 你的 fork
+#
+# 首次：
+#   cd /root/new-api
+#   git clone -b custom https://github.com/huangxin8899/new-api.git new-api-fork
+#   # 若还没有 custom 分支，用 -b main
+#   cp .env.example .env   # 填好密钥后
+#   docker compose build new-api
+#   docker compose up -d
+#
+# 日常更新二开：
+#   ./update.sh
+#
+# 回滚示例：
+#   docker tag my-new-api:20260712-1530 my-new-api:custom
+#   docker compose up -d new-api
+
+services:
+  new-api:
+    build:
+      context: ./new-api-fork
+      dockerfile: Dockerfile
+    image: my-new-api:custom
+    container_name: new-api
+    restart: always
+    command: --log-dir /app/logs
+    ports:
+      - '13000:3000'
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    environment:
+      - SQL_DSN=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - REDIS_CONN_STRING=redis://redis
+      - TZ=Asia/Shanghai
+      - ERROR_LOG_ENABLED=true
+      - BATCH_UPDATE_ENABLED=true
+      - SESSION_SECRET=${SESSION_SECRET}
+      - STREAMING_TIMEOUT=300
+      - NODE_NAME=${NODE_NAME:-new-api-node-1}
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ['CMD-SHELL', "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg_data:

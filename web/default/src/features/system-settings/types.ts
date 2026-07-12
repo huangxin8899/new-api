@@ -344,6 +344,9 @@ export type OperationsSettings = {
   SMTPStartTLSEnabled: boolean
   SMTPInsecureSkipVerify: boolean
   SMTPForceAuthLogin: boolean
+  EmailVerificationSubject: string
+  EmailVerificationBody: string
+  EmailResetEmailBody: string
   WorkerUrl: string
   WorkerValidKey: string
   WorkerAllowHttpImageRequestEnabled: boolean

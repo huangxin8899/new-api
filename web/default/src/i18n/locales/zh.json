@@ -5178,6 +5178,17 @@
     "Zero retention": "零数据保留",
     "Zhipu": "智谱",
     "Zhipu V4": "智谱 V4",
-    "Zoom": "缩放"
+    "Zoom": "缩放",
+    "Email Templates (optional)": "邮件模板（可选）",
+    "Leave blank to use the built-in default template. Supported placeholders: {{system_name}} {{code}} {{minutes}} {{link}}": "留空则使用内置默认模板。可用占位符：{{system_name}} {{code}} {{minutes}} {{link}}",
+    "Verification Email Subject": "邮箱验证邮件主题",
+    "Leave blank to use default": "留空使用默认",
+    "Subject of the registration/verification email. Placeholders: {{system_name}} {{code}} {{minutes}}": "注册/验证邮件的主题。可用占位符：{{system_name}} {{code}} {{minutes}}",
+    "Verification Email Body": "邮箱验证邮件正文",
+    "Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{code}} {{minutes}}": "留空使用默认。支持 HTML。可用占位符：{{system_name}} {{code}} {{minutes}}",
+    "HTML body of the verification email. Placeholders: {{system_name}} {{code}} {{minutes}}": "验证邮件的 HTML 正文。可用占位符：{{system_name}} {{code}} {{minutes}}",
+    "Password Reset Email Body": "密码重置邮件正文",
+    "Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{link}} {{minutes}}": "留空使用默认。支持 HTML。可用占位符：{{system_name}} {{link}} {{minutes}}",
+    "HTML body of the password reset email. Placeholders: {{system_name}} {{link}} {{minutes}}": "密码重置邮件的 HTML 正文。可用占位符：{{system_name}} {{link}} {{minutes}}"
   }
 }

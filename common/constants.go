@@ -129,6 +129,14 @@ var SMTPAccount = ""
 var SMTPFrom = ""
 var SMTPToken = ""
 
+// EmailVerificationSubject / EmailVerificationBody / EmailResetEmailBody are
+// optional, frontend-configurable email templates. When empty, the built-in
+// default templates are used. Supported placeholders:
+//   {{system_name}} {{code}} {{link}} {{minutes}}
+var EmailVerificationSubject = ""
+var EmailVerificationBody = ""
+var EmailResetEmailBody = ""
+
 var GitHubClientId = ""
 var GitHubClientSecret = ""
 var LinuxDOClientId = ""

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
@@ -282,10 +283,7 @@ func SendEmailVerification(c *gin.Context) {
 	}
 	code := common.GenerateVerificationCode(6)
 	common.RegisterVerificationCodeWithKey(email, code, common.EmailVerificationPurpose)
-	subject := fmt.Sprintf("%s邮箱验证邮件", common.SystemName)
-	content := fmt.Sprintf("<p>您好，你正在进行%s邮箱验证。</p>"+
-		"<p>您的验证码为: <strong>%s</strong></p>"+
-		"<p>验证码 %d 分钟内有效，如果不是本人操作，请忽略。</p>", common.SystemName, code, common.VerificationValidMinutes)
+	subject, content := renderEmailVerificationTemplates(common.SystemName, code, common.VerificationValidMinutes)
 	err := common.SendEmail(subject, email, content)
 	if err != nil {
 		common.ApiError(c, err)
@@ -308,11 +306,7 @@ func SendPasswordResetEmail(c *gin.Context) {
 		code := common.GenerateVerificationCode(0)
 		common.RegisterVerificationCodeWithKey(email, code, common.PasswordResetPurpose)
 		link := fmt.Sprintf("%s/user/reset?email=%s&token=%s", system_setting.ServerAddress, email, code)
-		subject := fmt.Sprintf("%s密码重置", common.SystemName)
-		content := fmt.Sprintf("<p>您好，你正在进行%s密码重置。</p>"+
-			"<p>点击 <a href='%s'>此处</a> 进行密码重置。</p>"+
-			"<p>如果链接无法点击，请尝试点击下面的链接或将其复制到浏览器中打开：<br> %s </p>"+
-			"<p>重置链接 %d 分钟内有效，如果不是本人操作，请忽略。</p>", common.SystemName, link, link, common.VerificationValidMinutes)
+		subject, content := renderPasswordResetEmailTemplates(common.SystemName, link, common.VerificationValidMinutes)
 		err := common.SendEmail(subject, email, content)
 		if err != nil {
 			logger.LogError(c.Request.Context(), fmt.Sprintf("failed to send password reset email to %s: %s", email, err.Error()))
@@ -364,4 +358,65 @@ func ResetPassword(c *gin.Context) {
 		"data":    password,
 	})
 	return
+}
+
+// renderEmailVerificationTemplates returns the configured verification-email
+// subject and body, falling back to the built-in defaults when the admin has
+// not customized them. Supported placeholders: {{system_name}} {{code}} {{minutes}}.
+func renderEmailVerificationTemplates(systemName, code string, minutes int) (subject, content string) {
+	const defaultSubject = "%s邮箱验证邮件"
+	defaultBody := "<p>您好，你正在进行%s邮箱验证。</p>" +
+		"<p>您的验证码为: <strong>%s</strong></p>" +
+		"<p>验证码 %d 分钟内有效，如果不是本人操作，请忽略。</p>"
+	if strings.TrimSpace(common.EmailVerificationSubject) == "" {
+		subject = fmt.Sprintf(defaultSubject, systemName)
+	} else {
+		subject = renderTemplate(common.EmailVerificationSubject, map[string]string{
+			"system_name": systemName,
+			"code":        code,
+			"minutes":     strconv.Itoa(minutes),
+		})
+	}
+	if strings.TrimSpace(common.EmailVerificationBody) == "" {
+		content = fmt.Sprintf(defaultBody, systemName, code, minutes)
+	} else {
+		content = renderTemplate(common.EmailVerificationBody, map[string]string{
+			"system_name": systemName,
+			"code":        code,
+			"minutes":     strconv.Itoa(minutes),
+		})
+	}
+	return subject, content
+}
+
+// renderPasswordResetEmailTemplates mirrors the above for the password-reset
+// email. Supported placeholders: {{system_name}} {{link}} {{minutes}}.
+func renderPasswordResetEmailTemplates(systemName, link string, minutes int) (subject, content string) {
+	const defaultSubject = "%s密码重置"
+	defaultBody := "<p>您好，你正在进行%s密码重置。</p>" +
+		"<p>点击 <a href='%s'>此处</a> 进行密码重置。</p>" +
+		"<p>如果链接无法点击，请尝试点击下面的链接或将其复制到浏览器中打开：<br> %s </p>" +
+		"<p>重置链接 %d 分钟内有效，如果不是本人操作，请忽略。</p>"
+	subject = fmt.Sprintf(defaultSubject, systemName)
+	if strings.TrimSpace(common.EmailResetEmailBody) == "" {
+		content = fmt.Sprintf(defaultBody, systemName, link, link, minutes)
+	} else {
+		content = renderTemplate(common.EmailResetEmailBody, map[string]string{
+			"system_name": systemName,
+			"link":       link,
+			"minutes":    strconv.Itoa(minutes),
+		})
+	}
+	return subject, content
+}
+
+// renderTemplate replaces {{key}} placeholders with the provided values.
+func renderTemplate(tmpl string, vars map[string]string) string {
+	r := strings.NewReplacer(
+		"{{system_name}}", vars["system_name"],
+		"{{code}}", vars["code"],
+		"{{link}}", vars["link"],
+		"{{minutes}}", vars["minutes"],
+	)
+	return r.Replace(tmpl)
 }

@@ -74,6 +74,9 @@ const OPERATIONS_SECTIONS = [
           SMTPStartTLSEnabled: settings.SMTPStartTLSEnabled,
           SMTPInsecureSkipVerify: settings.SMTPInsecureSkipVerify,
           SMTPForceAuthLogin: settings.SMTPForceAuthLogin,
+          EmailVerificationSubject: settings.EmailVerificationSubject ?? '',
+          EmailVerificationBody: settings.EmailVerificationBody ?? '',
+          EmailResetEmailBody: settings.EmailResetEmailBody ?? '',
         }}
       />
     ),

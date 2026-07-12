@@ -5178,6 +5178,17 @@
     "Zero retention": "Zero retention",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom"
+    "Zoom": "Zoom",
+    "Email Templates (optional)": "Email Templates (optional)",
+    "Leave blank to use the built-in default template. Supported placeholders: {{system_name}} {{code}} {{minutes}} {{link}}": "Leave blank to use the built-in default template. Supported placeholders: {{system_name}} {{code}} {{minutes}} {{link}}",
+    "Verification Email Subject": "Verification Email Subject",
+    "Leave blank to use default": "Leave blank to use default",
+    "Subject of the registration/verification email. Placeholders: {{system_name}} {{code}} {{minutes}}": "Subject of the registration/verification email. Placeholders: {{system_name}} {{code}} {{minutes}}",
+    "Verification Email Body": "Verification Email Body",
+    "Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{code}} {{minutes}}": "Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{code}} {{minutes}}",
+    "HTML body of the verification email. Placeholders: {{system_name}} {{code}} {{minutes}}": "HTML body of the verification email. Placeholders: {{system_name}} {{code}} {{minutes}}",
+    "Password Reset Email Body": "Password Reset Email Body",
+    "Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{link}} {{minutes}}": "Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{link}} {{minutes}}",
+    "HTML body of the password reset email. Placeholders: {{system_name}} {{link}} {{minutes}}": "HTML body of the password reset email. Placeholders: {{system_name}} {{link}} {{minutes}}"
   }
 }

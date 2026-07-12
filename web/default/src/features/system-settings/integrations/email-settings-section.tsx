@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 
 import {
   SettingsForm,
@@ -64,6 +65,9 @@ const createEmailSchema = (t: (key: string) => string) =>
     SMTPStartTLSEnabled: z.boolean(),
     SMTPInsecureSkipVerify: z.boolean(),
     SMTPForceAuthLogin: z.boolean(),
+    EmailVerificationSubject: z.string(),
+    EmailVerificationBody: z.string(),
+    EmailResetEmailBody: z.string(),
   })
 
 type EmailFormValues = z.infer<ReturnType<typeof createEmailSchema>>
@@ -109,6 +113,9 @@ export function EmailSettingsSection({
       SMTPStartTLSEnabled: securityMode === 'starttls',
       SMTPInsecureSkipVerify: values.SMTPInsecureSkipVerify,
       SMTPForceAuthLogin: values.SMTPForceAuthLogin,
+      EmailVerificationSubject: values.EmailVerificationSubject,
+      EmailVerificationBody: values.EmailVerificationBody,
+      EmailResetEmailBody: values.EmailResetEmailBody,
     }
 
     const initial = {
@@ -121,6 +128,9 @@ export function EmailSettingsSection({
       SMTPStartTLSEnabled: defaultValues.SMTPStartTLSEnabled,
       SMTPInsecureSkipVerify: defaultValues.SMTPInsecureSkipVerify,
       SMTPForceAuthLogin: defaultValues.SMTPForceAuthLogin,
+      EmailVerificationSubject: defaultValues.EmailVerificationSubject,
+      EmailVerificationBody: defaultValues.EmailVerificationBody,
+      EmailResetEmailBody: defaultValues.EmailResetEmailBody,
     }
 
     const updates: Array<{ key: string; value: string | boolean }> = []
@@ -170,6 +180,27 @@ export function EmailSettingsSection({
       updates.push({
         key: 'SMTPForceAuthLogin',
         value: sanitized.SMTPForceAuthLogin,
+      })
+    }
+
+    if (sanitized.EmailVerificationSubject !== initial.EmailVerificationSubject) {
+      updates.push({
+        key: 'EmailVerificationSubject',
+        value: sanitized.EmailVerificationSubject,
+      })
+    }
+
+    if (sanitized.EmailVerificationBody !== initial.EmailVerificationBody) {
+      updates.push({
+        key: 'EmailVerificationBody',
+        value: sanitized.EmailVerificationBody,
+      })
+    }
+
+    if (sanitized.EmailResetEmailBody !== initial.EmailResetEmailBody) {
+      updates.push({
+        key: 'EmailResetEmailBody',
+        value: sanitized.EmailResetEmailBody,
       })
     }
 
@@ -400,6 +431,87 @@ export function EmailSettingsSection({
                 </FormControl>
                 <FormDescription>
                   {t('Leave blank to keep the existing credential')}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className='border-t pt-6 mt-2'>
+            <h3 className='font-medium'>
+              {t('Email Templates (optional)')}
+            </h3>
+            <p className='text-muted-foreground text-sm mt-1'>
+              {t(
+                'Leave blank to use the built-in default template. Supported placeholders: {{system_name}} {{code}} {{minutes}} {{link}}'
+              )}
+            </p>
+          </div>
+
+          <FormField
+            control={form.control}
+            name='EmailVerificationSubject'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('Verification Email Subject')}</FormLabel>
+                <FormControl>
+                  <Input
+                    autoComplete='off'
+                    placeholder={t('Leave blank to use default')}
+                    {...field}
+                    onChange={(event) => field.onChange(event.target.value)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {t('Subject of the registration/verification email. Placeholders: {{system_name}} {{code}} {{minutes}}')}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='EmailVerificationBody'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('Verification Email Body')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    className='font-mono text-sm min-h-[120px]'
+                    placeholder={t(
+                      'Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{code}} {{minutes}}'
+                    )}
+                    {...field}
+                    onChange={(event) => field.onChange(event.target.value)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {t('HTML body of the verification email. Placeholders: {{system_name}} {{code}} {{minutes}}')}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='EmailResetEmailBody'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('Password Reset Email Body')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    className='font-mono text-sm min-h-[120px]'
+                    placeholder={t(
+                      'Leave blank to use default. HTML allowed. Placeholders: {{system_name}} {{link}} {{minutes}}'
+                    )}
+                    {...field}
+                    onChange={(event) => field.onChange(event.target.value)}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {t('HTML body of the password reset email. Placeholders: {{system_name}} {{link}} {{minutes}}')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -97,6 +97,20 @@ function LegalLinks(props: { leadingSeparator?: boolean }) {
       href: '/privacy-policy',
     })
   }
+  if (status?.delivery_terms_enabled) {
+    items.push({
+      key: 'delivery-terms',
+      label: t('Delivery & Service Terms'),
+      href: '/delivery-terms',
+    })
+  }
+  if (status?.refund_policy_enabled) {
+    items.push({
+      key: 'refund-policy',
+      label: t('Refund Policy'),
+      href: '/refund-policy',
+    })
+  }
   if (items.length === 0) {
     return null
   }

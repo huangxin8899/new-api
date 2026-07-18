@@ -16,7 +16,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-export { UserAgreement } from './user-agreement'
-export { PrivacyPolicy } from './privacy-policy'
-export { DeliveryTerms } from './delivery-terms'
-export { RefundPolicy } from './refund-policy'
+import { useTranslation } from 'react-i18next'
+
+import { getDeliveryTerms } from './api'
+import { LegalDocument } from './legal-document'
+
+export function DeliveryTerms() {
+  const { t } = useTranslation()
+  return (
+    <LegalDocument
+      title={t('Delivery & Service Terms')}
+      queryKey='delivery-terms'
+      fetchDocument={getDeliveryTerms}
+      emptyMessage={t(
+        'The administrator has not configured delivery and service terms yet.'
+      )}
+    />
+  )
+}

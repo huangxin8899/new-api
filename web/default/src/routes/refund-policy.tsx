@@ -16,7 +16,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-export { UserAgreement } from './user-agreement'
-export { PrivacyPolicy } from './privacy-policy'
-export { DeliveryTerms } from './delivery-terms'
-export { RefundPolicy } from './refund-policy'
+import { createFileRoute } from '@tanstack/react-router'
+
+import { RefundPolicy } from '@/features/legal'
+
+export const Route = createFileRoute('/refund-policy')({
+  component: RefundPolicy,
+})

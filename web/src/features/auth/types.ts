@@ -131,6 +131,7 @@ export interface SystemStatus {
     privacy_policy_enabled?: boolean
     delivery_terms_enabled?: boolean
     refund_policy_enabled?: boolean
+    contact_us_enabled?: boolean
     oauth_register_enabled?: boolean
     register_enabled?: boolean
     password_login_enabled?: boolean
@@ -177,6 +178,7 @@ export interface SystemStatus {
   privacy_policy_enabled?: boolean
   delivery_terms_enabled?: boolean
   refund_policy_enabled?: boolean
+  contact_us_enabled?: boolean
   oauth_register_enabled?: boolean
   register_enabled?: boolean
   password_login_enabled?: boolean

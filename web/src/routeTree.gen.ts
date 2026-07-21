@@ -14,6 +14,9 @@ import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as UserAgreementRouteImport } from './routes/user-agreement'
+import { Route as DeliveryTermsRouteImport } from './routes/delivery-terms'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as ContactUsRouteImport } from './routes/contact-us'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as authOauthRouteImport } from './routes/(auth)/oauth'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
@@ -89,6 +92,21 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
 const UserAgreementRoute = UserAgreementRouteImport.update({
   id: '/user-agreement',
   path: '/user-agreement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryTermsRoute = DeliveryTermsRouteImport.update({
+  id: '/delivery-terms',
+  path: '/delivery-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactUsRoute = ContactUsRouteImport.update({
+  id: '/contact-us',
+  path: '/contact-us',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
@@ -391,6 +409,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/user-agreement': typeof UserAgreementRoute
+  '/contact-us': typeof ContactUsRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/delivery-terms': typeof DeliveryTermsRoute
   '/system-settings': typeof AuthenticatedSystemSettingsRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/oauth': typeof authOauthRoute
@@ -449,6 +470,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/user-agreement': typeof UserAgreementRoute
+  '/contact-us': typeof ContactUsRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/delivery-terms': typeof DeliveryTermsRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/oauth': typeof authOauthRoute
   '/otp': typeof authOtpRoute
@@ -509,6 +533,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/user-agreement': typeof UserAgreementRoute
+  '/contact-us': typeof ContactUsRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/delivery-terms': typeof DeliveryTermsRoute
   '/_authenticated/system-settings': typeof AuthenticatedSystemSettingsRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/oauth': typeof authOauthRoute
@@ -569,6 +596,9 @@ export interface FileRouteTypes {
     | '/'
     | '/privacy-policy'
     | '/user-agreement'
+  | '/delivery-terms'
+  | '/refund-policy'
+  | '/contact-us'
     | '/system-settings'
     | '/forgot-password'
     | '/oauth'
@@ -627,6 +657,9 @@ export interface FileRouteTypes {
     | '/'
     | '/privacy-policy'
     | '/user-agreement'
+  | '/delivery-terms'
+  | '/refund-policy'
+  | '/contact-us'
     | '/forgot-password'
     | '/oauth'
     | '/otp'
@@ -686,6 +719,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/privacy-policy'
     | '/user-agreement'
+  | '/delivery-terms'
+  | '/refund-policy'
+  | '/contact-us'
     | '/_authenticated/system-settings'
     | '/(auth)/forgot-password'
     | '/(auth)/oauth'
@@ -758,6 +794,9 @@ export interface RootRouteChildren {
   RankingsIndexRoute: typeof RankingsIndexRoute
   SetupIndexRoute: typeof SetupIndexRoute
   PricingModelIdIndexRoute: typeof PricingModelIdIndexRoute
+  DeliveryTermsRoute: typeof DeliveryTermsRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
+  ContactUsRoute: typeof ContactUsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -795,6 +834,27 @@ declare module '@tanstack/react-router' {
       path: '/user-agreement'
       fullPath: '/user-agreement'
       preLoaderRoute: typeof UserAgreementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery-terms': {
+      id: '/delivery-terms'
+      path: '/delivery-terms'
+      fullPath: '/delivery-terms'
+      preLoaderRoute: typeof DeliveryTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact-us': {
+      id: '/contact-us'
+      path: '/contact-us'
+      fullPath: '/contact-us'
+      preLoaderRoute: typeof ContactUsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/forgot-password': {
@@ -1320,6 +1380,9 @@ const rootRouteChildren: RootRouteChildren = {
   RankingsIndexRoute: RankingsIndexRoute,
   SetupIndexRoute: SetupIndexRoute,
   PricingModelIdIndexRoute: PricingModelIdIndexRoute,
+  DeliveryTermsRoute: DeliveryTermsRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
+  ContactUsRoute: ContactUsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

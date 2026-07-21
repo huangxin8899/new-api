@@ -111,6 +111,13 @@ function LegalLinks(props: { leadingSeparator?: boolean }) {
       href: '/refund-policy',
     })
   }
+  if (status?.contact_us_enabled) {
+    items.push({
+      key: 'contact-us',
+      label: t('Contact Us'),
+      href: '/contact-us',
+    })
+  }
   if (items.length === 0) {
     return null
   }

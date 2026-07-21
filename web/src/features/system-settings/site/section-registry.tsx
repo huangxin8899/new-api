@@ -47,6 +47,7 @@ const SITE_SECTIONS = [
             privacy_policy: settings['legal.privacy_policy'],
             delivery_terms: settings['legal.delivery_terms'],
             refund_policy: settings['legal.refund_policy'],
+            contact_us: settings['legal.contact_us'],
           },
         }}
       />

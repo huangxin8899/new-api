@@ -30,6 +30,7 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/privacy-policy", controller.GetPrivacyPolicy)
 		apiRouter.GET("/delivery-terms", controller.GetDeliveryTerms)
 		apiRouter.GET("/refund-policy", controller.GetRefundPolicy)
+		apiRouter.GET("/contact-us", controller.GetContactUs)
 		apiRouter.GET("/about", controller.GetAbout)
 		//apiRouter.GET("/midjourney", controller.GetMidjourney)
 		apiRouter.GET("/home_page_content", controller.GetHomePageContent)

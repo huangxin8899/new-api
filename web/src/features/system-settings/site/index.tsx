@@ -36,6 +36,7 @@ const defaultSiteSettings: SiteSettings = {
   'legal.privacy_policy': '',
   'legal.delivery_terms': '',
   'legal.refund_policy': '',
+  'legal.contact_us': '',
   HeaderNavModules: '',
   SidebarModulesAdmin: '',
 }

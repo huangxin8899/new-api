@@ -124,6 +124,7 @@ func GetStatus(c *gin.Context) {
 		"privacy_policy_enabled":      legalSetting.PrivacyPolicy != "",
 		"delivery_terms_enabled":      legalSetting.DeliveryTerms != "",
 		"refund_policy_enabled":       legalSetting.RefundPolicy != "",
+			"contact_us_enabled":          legalSetting.ContactUs != "",
 		"checkin_enabled":             operation_setting.GetCheckinSetting().Enabled,
 	}
 
@@ -228,6 +229,15 @@ func GetRefundPolicy(c *gin.Context) {
 		"success": true,
 		"message": "",
 		"data":    system_setting.GetLegalSettings().RefundPolicy,
+	})
+	return
+}
+
+func GetContactUs(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    system_setting.GetLegalSettings().ContactUs,
 	})
 	return
 }

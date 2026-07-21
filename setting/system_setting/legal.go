@@ -7,6 +7,7 @@ type LegalSettings struct {
 	PrivacyPolicy string `json:"privacy_policy"`
 	DeliveryTerms string `json:"delivery_terms"`
 	RefundPolicy  string `json:"refund_policy"`
+	ContactUs     string `json:"contact_us"`
 }
 
 var defaultLegalSettings = LegalSettings{
@@ -14,6 +15,7 @@ var defaultLegalSettings = LegalSettings{
 	PrivacyPolicy: "",
 	DeliveryTerms: "",
 	RefundPolicy:  "",
+	ContactUs:     "",
 }
 
 func init() {

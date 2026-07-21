@@ -16,8 +16,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-export { UserAgreement } from './user-agreement'
-export { PrivacyPolicy } from './privacy-policy'
-export { DeliveryTerms } from './delivery-terms'
-export { RefundPolicy } from './refund-policy'
-export { ContactUs } from './contact-us'
+import { useTranslation } from 'react-i18next'
+
+import { getContactUs } from './api'
+import { LegalDocument } from './legal-document'
+
+export function ContactUs() {
+  const { t } = useTranslation()
+  return (
+    <LegalDocument
+      title={t('Contact Us')}
+      queryKey='contact-us'
+      fetchDocument={getContactUs}
+      emptyMessage={t(
+        'The administrator has not configured contact information yet.'
+      )}
+    />
+  )
+}

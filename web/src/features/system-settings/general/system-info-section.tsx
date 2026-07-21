@@ -57,6 +57,7 @@ const _systemInfoSchema = z.object({
     privacy_policy: z.string().optional(),
     delivery_terms: z.string().optional(),
     refund_policy: z.string().optional(),
+    contact_us: z.string().optional(),
   }),
 })
 
@@ -87,6 +88,7 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
       privacy_policy: normalizeValue(defaultValues.legal?.privacy_policy),
       delivery_terms: normalizeValue(defaultValues.legal?.delivery_terms),
       refund_policy: normalizeValue(defaultValues.legal?.refund_policy),
+      contact_us: normalizeValue(defaultValues.legal?.contact_us),
     },
   }
 
@@ -104,6 +106,7 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
       privacy_policy: z.string().optional(),
       delivery_terms: z.string().optional(),
       refund_policy: z.string().optional(),
+      contact_us: z.string().optional(),
     }),
   })
 
@@ -232,15 +235,15 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
                     <FormControl>
                       <Textarea
                         placeholder={t(
-                          'Enter HTML code (e.g., <p>About us...</p>) or a URL (e.g., https://example.com) to embed as iframe'
+                          'Provide Markdown, HTML, or an external URL for the about page'
                         )}
-                        rows={4}
+                        rows={6}
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
                       {t(
-                        'Supports HTML markup or iframe embedding. Enter HTML code directly, or provide a complete URL to automatically embed it as an iframe.'
+                        'Leave empty to show the default about page. Supports Markdown, HTML, or a full URL to embed as an iframe.'
                       )}
                     </FormDescription>
                     <FormMessage />
@@ -366,6 +369,31 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
                     <FormDescription>
                       {t(
                         'Leave empty to hide the refund policy. Supports Markdown, HTML, or a full URL to redirect users.'
+                      )}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='legal.contact_us'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('Contact Us')}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t(
+                          'Provide Markdown, HTML, or an external URL for the contact page'
+                        )}
+                        rows={6}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t(
+                        'Leave empty to hide the contact page. Supports Markdown, HTML, or a full URL to redirect users.'
                       )}
                     </FormDescription>
                     <FormMessage />

@@ -41,7 +41,7 @@ function EmptyAboutState() {
           <h2 className='text-2xl font-bold'>{t('No About Content Set')}</h2>
           <p className='text-muted-foreground'>
             {t(
-              'The administrator has not configured any about content yet. You can set it in the settings page, supporting HTML or URL.'
+              'The administrator has not configured any about content yet. You can set it in the settings page, supporting Markdown, HTML or URL.'
             )}
           </p>
         </div>

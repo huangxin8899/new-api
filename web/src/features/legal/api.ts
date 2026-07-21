@@ -39,3 +39,8 @@ export async function getRefundPolicy() {
   const res = await api.get<LegalDocumentResponse>('/api/refund-policy')
   return res.data
 }
+
+export async function getContactUs() {
+  const res = await api.get<LegalDocumentResponse>('/api/contact-us')
+  return res.data
+}

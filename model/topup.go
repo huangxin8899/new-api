@@ -6,6 +6,7 @@ import (
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/logger"
+	"github.com/QuantumNous/new-api/setting/meta_pixel_setting"
 
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -57,6 +58,15 @@ func (topUp *TopUp) Update() error {
 	var err error
 	err = DB.Save(topUp).Error
 	return err
+}
+
+// AfterSave 订单保存后,若变更为成功状态则上报 Meta Pixel 充值转化事件。
+// 幂等:event_id 用订单号,Meta 侧按 event_id 去重;重复保存不会重复计入。
+func (topUp *TopUp) AfterSave(tx *gorm.DB) error {
+	if topUp.Status == common.TopUpStatusSuccess && topUp.TradeNo != "" {
+		meta_pixel_setting.TrackPurchase(topUp.TradeNo, topUp.Money, topUp.UserId)
+	}
+	return nil
 }
 
 func GetTopUpById(id int) *TopUp {

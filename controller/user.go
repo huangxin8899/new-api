@@ -19,6 +19,7 @@ import (
 	"github.com/QuantumNous/new-api/service"
 	"github.com/QuantumNous/new-api/service/authz"
 	"github.com/QuantumNous/new-api/setting"
+	"github.com/QuantumNous/new-api/setting/meta_pixel_setting"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 
 	"github.com/QuantumNous/new-api/constant"
@@ -287,6 +288,8 @@ func Register(c *gin.Context) {
 		common.ApiErrorI18n(c, i18n.MsgUserRegisterFailed)
 		return
 	}
+	// 注册完成事件:走 Conversions API 服务端上报,浏览器像素被屏蔽时仍可追踪
+	meta_pixel_setting.TrackCompleteRegistration(insertedUser.Id, user.Email)
 	// 生成默认令牌
 	if constant.GenerateDefaultToken {
 		key, err := common.GenerateKey()

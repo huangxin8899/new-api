@@ -29,20 +29,26 @@ type metaPixelRequest struct {
 	Data []metaPixelEvent `json:"data"`
 }
 
-// reportEvent 异步上报单个事件。失败仅记日志,不阻塞业务。
+// reportEvent 向所有已配置像素异步上报单个事件。失败仅记日志,不阻塞业务。
 func reportEvent(ev metaPixelEvent) {
-	if !IsEnabled() {
+	for _, pixel := range GetMetaPixelSetting().GetPixels() {
+		reportEventToPixel(ev, pixel)
+	}
+}
+
+// reportEventToPixel 异步上报单个事件到指定像素。失败仅记日志,不阻塞业务。
+func reportEventToPixel(ev metaPixelEvent, pixel MetaPixelConfig) {
+	if pixel.PixelID == "" || pixel.AccessToken == "" {
 		return
 	}
 	go func() {
-		cfg := GetMetaPixelSetting()
 		payload, err := common.Marshal(metaPixelRequest{Data: []metaPixelEvent{ev}})
 		if err != nil {
 			common.SysError("meta_pixel: marshal event failed: " + err.Error())
 			return
 		}
 		url := fmt.Sprintf("%s/%s/%s/events?access_token=%s",
-			metaPixelGraphAPI, metaPixelGraphVersion, cfg.PixelID, cfg.AccessToken)
+			metaPixelGraphAPI, metaPixelGraphVersion, pixel.PixelID, pixel.AccessToken)
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(payload))
 		if err != nil {
 			common.SysError("meta_pixel: build request failed: " + err.Error())

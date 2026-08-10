@@ -89,7 +89,8 @@ func GetOptions(c *gin.Context) {
 			strings.HasSuffix(k, "Secret") ||
 			strings.HasSuffix(k, "Key") ||
 			strings.HasSuffix(k, "secret") ||
-			strings.HasSuffix(k, "api_key")
+			strings.HasSuffix(k, "api_key") ||
+			k == "meta_pixel_setting.pixels" // 数组内含 access_token,不可经设置页暴露
 		if isSensitiveKey {
 			continue
 		}

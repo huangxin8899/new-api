@@ -268,6 +268,42 @@ export type EvalResult = {
   error: string | null
 }
 
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+}
+
+// Mirrors the backend timeInZone() helper: an unknown or empty timezone falls
+// back to UTC instead of failing the whole expression.
+function zonedTimeParts(tz: unknown): Record<string, string> {
+  const zone = typeof tz === 'string' && tz.trim() ? tz.trim() : 'UTC'
+  const format = (timeZone: string) =>
+    new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      hour: '2-digit',
+      minute: '2-digit',
+      weekday: 'short',
+      month: 'numeric',
+      day: 'numeric',
+    })
+      .formatToParts(new Date())
+      .reduce<Record<string, string>>((acc, part) => {
+        acc[part.type] = part.value
+        return acc
+      }, {})
+  try {
+    return format(zone)
+  } catch {
+    return format('UTC')
+  }
+}
+
 export function evalExprLocally(
   exprStr: string,
   promptTokens: number,
@@ -278,6 +314,8 @@ export function evalExprLocally(
     if (!exprStr || !exprStr.trim()) {
       return { cost: 0, matchedTier: '', error: null }
     }
+    const versionMatch = exprStr.match(/^v\d+:([\s\S]*)$/)
+    const body = versionMatch ? versionMatch[1] : exprStr
     let matchedTier = ''
     const tierFn = (name: string, value: number) => {
       matchedTier = name
@@ -298,13 +336,24 @@ export function evalExprLocally(
       abs: Math.abs,
       ceil: Math.ceil,
       floor: Math.floor,
+      hour: (tz: unknown) => Number(zonedTimeParts(tz).hour),
+      minute: (tz: unknown) => Number(zonedTimeParts(tz).minute),
+      weekday: (tz: unknown) => WEEKDAY_INDEX[zonedTimeParts(tz).weekday] ?? 0,
+      month: (tz: unknown) => Number(zonedTimeParts(tz).month),
+      day: (tz: unknown) => Number(zonedTimeParts(tz).day),
+      // The preview has no live request, so request probes resolve to empty
+      // values and their conditions evaluate as unmatched.
+      param: () => null,
+      header: () => '',
+      has: (source: unknown, substr: string) =>
+        source != null && !!substr && String(source).includes(substr),
     }
     for (const field of ESTIMATOR_VARS) {
       env[field.var] = extraTokenValues[field.stateKey] || 0
     }
     const fn = new Function(
       ...Object.keys(env),
-      `"use strict"; return (${exprStr});`
+      `"use strict"; return (${body});`
     )
     const cost = Number(fn(...Object.values(env))) || 0
     return { cost, matchedTier, error: null }

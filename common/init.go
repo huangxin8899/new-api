@@ -133,6 +133,16 @@ func InitEnv() {
 	SearchRateLimitEnable = GetEnvOrDefaultBool("SEARCH_RATE_LIMIT_ENABLE", true)
 	SearchRateLimitNum = GetEnvOrDefault("SEARCH_RATE_LIMIT", 10)
 	SearchRateLimitDuration = int64(GetEnvOrDefault("SEARCH_RATE_LIMIT_DURATION", 60))
+
+	// 渐进式人机验证：0 表示每次都要求 Turnstile（旧的无条件行为）
+	ChallengeTriggerThreshold = GetEnvOrDefault("CHALLENGE_TRIGGER_THRESHOLD", 2)
+	if ChallengeTriggerThreshold < 0 {
+		ChallengeTriggerThreshold = 0
+	}
+	ChallengeWindowSeconds = int64(GetEnvOrDefault("CHALLENGE_WINDOW_SECONDS", 60*60))
+	if ChallengeWindowSeconds <= 0 {
+		ChallengeWindowSeconds = 60 * 60
+	}
 	initConstantEnv()
 }
 

@@ -320,6 +320,8 @@ func SendEmailVerification(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	// 发信要花 SMTP 配额、被滥用还会拖累域名声誉，所以每发一封就累加一次可疑度
+	common.RecordChallengeStrike(c.Request.Context(), common.ChallengeScopeAuth, c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -333,6 +335,9 @@ func SendPasswordResetEmail(c *gin.Context) {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		return
 	}
+	// 无论邮箱是否存在都累加：本接口对未注册邮箱同样返回 success（防枚举），
+	// 只有按请求次数计数才能让批量试邮箱的行为撞上人机验证
+	common.RecordChallengeStrike(c.Request.Context(), common.ChallengeScopeAuth, c.ClientIP())
 	if _, err := model.GetUniqueUserByEmail(email); err == nil {
 		code := common.GenerateVerificationCode(0)
 		common.RegisterVerificationCodeWithKey(email, code, common.PasswordResetPurpose)

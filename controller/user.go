@@ -63,11 +63,14 @@ func Login(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, model.ErrDatabase):
+			// 服务端故障不记到访客头上，否则一次 DB 抖动会让所有人都被要求人机验证
 			common.SysLog(fmt.Sprintf("Login database error for user %s: %v", username, err))
 			common.ApiErrorI18n(c, i18n.MsgDatabaseError)
 		case errors.Is(err, model.ErrUserEmptyCredentials):
+			common.RecordChallengeStrike(c.Request.Context(), common.ChallengeScopeAuth, c.ClientIP())
 			common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		default:
+			common.RecordChallengeStrike(c.Request.Context(), common.ChallengeScopeAuth, c.ClientIP())
 			common.ApiErrorI18n(c, i18n.MsgUserUsernameOrPasswordError)
 		}
 		return
@@ -188,6 +191,9 @@ func setupLoginAtAuthVersion(user *model.User, expectedAuthVersion int64, c *gin
 		return
 	}
 	model.UpdateUserLastLoginAt(user.Id)
+	// 任何方式登录成功都证明对方是真人，清掉该 IP 的可疑度，
+	// 免得同一出口 IP 后面的用户被前面的失败连累
+	common.ClearChallengeStrikes(c.Request.Context(), common.ChallengeScopeAuth, c.ClientIP())
 	service.WriteRefreshCookie(c, bundle.RefreshToken)
 	setAuthNoStore(c)
 	recordLoginAudit(user, c)
@@ -318,6 +324,9 @@ func Register(c *gin.Context) {
 			return
 		}
 	}
+
+	// 一个 IP 正常只注册一两个账号，累计到阈值后续注册就要过人机验证
+	common.RecordChallengeStrike(c.Request.Context(), common.ChallengeScopeAuth, c.ClientIP())
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

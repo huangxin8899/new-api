@@ -138,6 +138,19 @@ Redis 限流使用原子 Lua 固定窗口，替代旧的近似滑动窗口 List 
 
 开放注册仍会受 Critical IP 限流保护，但分布式 IP 多账号攻击不能仅靠 IP 限流阻止。公网开放注册的部署应同时启用 Turnstile 和邮箱验证；更强的设备或多维风控需作为独立安全项目设计。
 
+## 渐进式人机验证
+
+`/api/user/login`、`/api/user/register`、`/api/verification`、`/api/reset_password` 使用 `AdaptiveTurnstileCheck`：Turnstile 只对已经表现出可疑行为的客户端 IP 生效，干净 IP 的请求直接放行。这是有意的取舍——无条件校验会让每个访客一进登录页就加载 `challenges.cloudflare.com`，该域名在部分地区延迟极高，会显著拖慢首屏。签到接口 `/api/user/checkin` 仍使用无条件的 `TurnstileCheck`。
+
+可疑度按 IP 累计（Redis 优先，未启用 Redis 时退化为单机内存），以下行为各计 1 次：登录失败、注册成功、成功发出注册验证码、请求密码重置邮件。任意方式登录成功会清零该 IP 的计数。计数达到阈值后，这四个接口都会以 `{"success": false, "data": {"turnstile_required": true}}` 拒绝无 token 的请求，前端据此渲染 widget 并携带 token 重试。
+
+| 环境变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `CHALLENGE_TRIGGER_THRESHOLD` | `2` | 触发人机验证所需的窗口内可疑次数；设为 `0` 关闭渐进，恢复旧的无条件校验行为 |
+| `CHALLENGE_WINDOW_SECONDS` | `3600` | 计数窗口，窗口内无新的可疑行为则自动归零 |
+
+已知残余风险：持有大量代理 IP、每个 IP 只尝试一两次的攻击者不会触碰阈值。这类攻击由 Critical IP 限流和邮箱验证兜底，需要更强防护时应调低阈值或改回 `CHALLENGE_TRIGGER_THRESHOLD=0`。未启用 Redis 的多实例部署中每个实例各自计数，实际阈值被放大到 `实例数 × 阈值`。
+
 ## PAT 调用契约
 
 `User.AccessToken`（面板 PAT）继续支持 `Authorization: Bearer <pat>`，也兼容原有的单值 `Authorization: <pat>`。`New-Api-User` 不再参与鉴权，外部脚本不需要再发送 Bearer 与用户 ID 双请求头。这是有意的调用契约简化；旧 PAT 本身无需重新生成。

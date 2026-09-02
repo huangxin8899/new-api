@@ -36,6 +36,8 @@ export const PAYMENT_TYPES = {
   CREEM: 'creem',
   WAFFO: 'waffo',
   WAFFO_PANCAKE: 'waffo_pancake',
+  XORPAY_NATIVE: 'xorpay_native',
+  XORPAY_ALIPAY: 'xorpay_alipay',
 } as const
 
 /**
@@ -53,6 +55,8 @@ export const PAYMENT_ICON_COLORS = {
   [PAYMENT_TYPES.CREEM]: '#6366F1',
   [PAYMENT_TYPES.WAFFO]: '#2563EB',
   [PAYMENT_TYPES.WAFFO_PANCAKE]: '#F97316',
+  [PAYMENT_TYPES.XORPAY_NATIVE]: '#07C160',
+  [PAYMENT_TYPES.XORPAY_ALIPAY]: '#1677FF',
 } as const
 
 /**

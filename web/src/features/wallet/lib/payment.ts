@@ -93,10 +93,23 @@ export function isWaffoPancakePayment(paymentType: string): boolean {
   return paymentType === PAYMENT_TYPES.WAFFO_PANCAKE
 }
 
+/**
+ * Check if payment method is XorPay QR scanning. XorPay returns a QR string
+ * instead of a redirect URL, so it has a dedicated processor and dialog.
+ */
+export function isXorPayPayment(paymentType: string): boolean {
+  return (
+    paymentType === PAYMENT_TYPES.XORPAY_NATIVE ||
+    paymentType === PAYMENT_TYPES.XORPAY_ALIPAY
+  )
+}
+
 export interface PaymentProcessors {
   regular: (topupAmount: number, paymentType: string) => Promise<boolean>
   waffo: (topupAmount: number, payMethodIndex: number) => Promise<boolean>
   waffoPancake: (topupAmount: number) => Promise<boolean>
+  /** XorPay opens a QR modal and polls the order; optional so existing callers stay valid */
+  xorpay?: (topupAmount: number, paymentType: string) => Promise<boolean>
 }
 
 export async function dispatchSelectedPayment(
@@ -114,6 +127,13 @@ export async function dispatchSelectedPayment(
 
   if (isWaffoPancakePayment(paymentMethod.type)) {
     return processors.waffoPancake(topupAmount)
+  }
+
+  if (isXorPayPayment(paymentMethod.type)) {
+    if (!processors.xorpay) {
+      return false
+    }
+    return processors.xorpay(topupAmount, paymentMethod.type)
   }
 
   return processors.regular(topupAmount, paymentMethod.type)
@@ -144,6 +164,10 @@ export function getDefaultPaymentType(topupInfo: TopupInfo | null): string {
     return PAYMENT_TYPES.WAFFO_PANCAKE
   }
 
+  if (topupInfo.enable_xorpay_topup) {
+    return PAYMENT_TYPES.XORPAY_NATIVE
+  }
+
   return DEFAULT_PAYMENT_TYPE
 }
 
@@ -169,6 +193,10 @@ export function getMinTopupAmount(topupInfo: TopupInfo | null): number {
 
   if (topupInfo.enable_waffo_pancake_topup) {
     return topupInfo.waffo_pancake_min_topup || DEFAULT_MIN_TOPUP
+  }
+
+  if (topupInfo.enable_xorpay_topup) {
+    return topupInfo.xorpay_min_topup || DEFAULT_MIN_TOPUP
   }
 
   return DEFAULT_MIN_TOPUP

@@ -39,6 +39,9 @@ import type {
   WaffoPaymentResponse,
   WaffoPancakePaymentRequest,
   WaffoPancakePaymentResponse,
+  XorPayPaymentRequest,
+  XorPayPaymentResponse,
+  XorPayOrderResponse,
 } from './types'
 
 // ============================================================================
@@ -178,6 +181,41 @@ export async function requestWaffoPancakePayment(
   const res = await api.post('/api/user/waffo-pancake/pay', request, {
     skipBusinessError: true,
   } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Calculate payment amount for XorPay payment
+ */
+export async function calculateXorPayAmount(
+  request: AmountRequest
+): Promise<AmountResponse> {
+  const res = await api.post('/api/user/xorpay/amount', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Request XorPay order; returns the QR code string on success
+ */
+export async function requestXorPayPayment(
+  request: XorPayPaymentRequest
+): Promise<XorPayPaymentResponse> {
+  const res = await api.post('/api/user/xorpay/pay', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Poll XorPay order status during QR scan
+ */
+export async function getXorPayOrderStatus(
+  tradeNo: string
+): Promise<XorPayOrderResponse> {
+  const query = new URLSearchParams({ trade_no: tradeNo })
+  const res = await api.get(`/api/user/xorpay/order?${query.toString()}`)
   return res.data
 }
 

@@ -25,6 +25,7 @@ import {
   calculateStripeAmount,
   calculateWaffoAmount,
   calculateWaffoPancakeAmount,
+  calculateXorPayAmount,
   requestPayment,
   requestStripePayment,
   isApiSuccess,
@@ -33,6 +34,7 @@ import {
   isStripePayment,
   isWaffoPayment,
   isWaffoPancakePayment,
+  isXorPayPayment,
   submitPaymentForm,
 } from '../lib'
 import type { AmountRequest, AmountResponse } from '../types'
@@ -48,6 +50,8 @@ export interface PaymentAmountCalculators {
   stripe: AmountCalculator
   waffo: AmountCalculator
   waffoPancake: AmountCalculator
+  /** Optional so custom maps in tests / callers stay valid */
+  xorpay?: AmountCalculator
 }
 
 const defaultPaymentAmountCalculators: PaymentAmountCalculators = {
@@ -55,6 +59,7 @@ const defaultPaymentAmountCalculators: PaymentAmountCalculators = {
   stripe: calculateStripeAmount,
   waffo: calculateWaffoAmount,
   waffoPancake: calculateWaffoPancakeAmount,
+  xorpay: calculateXorPayAmount,
 }
 
 export async function requestPaymentAmount(
@@ -69,6 +74,8 @@ export async function requestPaymentAmount(
     calculator = calculators.waffo
   } else if (isWaffoPancakePayment(paymentType)) {
     calculator = calculators.waffoPancake
+  } else if (isXorPayPayment(paymentType)) {
+    calculator = calculators.xorpay ?? calculators.regular
   }
 
   const response = await calculator({ amount: topupAmount })

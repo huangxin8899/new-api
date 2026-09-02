@@ -59,6 +59,20 @@ export type WaffoPancakePaymentResponse = ApiResponse<
     }
   | string
 >
+export type XorPayPaymentResponse = ApiResponse<
+  | {
+      /** WeChat / Alipay pay link encoded as a QR string */
+      qr_content: string
+      /** Merchant order number, used for status polling */
+      trade_no?: string
+      pay_type?: string
+      money?: string
+      /** QR code validity window in seconds */
+      expire?: number
+    }
+  | string
+>
+export type XorPayOrderResponse = ApiResponse<{ trade_no: string; status: string }>
 
 /**
  * Creem product configuration
@@ -150,6 +164,12 @@ export interface TopupInfo {
   enable_waffo_pancake_topup?: boolean
   /** Minimum topup amount for Waffo Pancake */
   waffo_pancake_min_topup?: number
+  /** Whether XorPay QR topup is enabled */
+  enable_xorpay_topup?: boolean
+  /** Available XorPay scan methods (native / alipay) */
+  xorpay_pay_methods?: PaymentMethod[]
+  /** Minimum topup amount for XorPay */
+  xorpay_min_topup?: number
   /** Whether redemption code usage is enabled */
   enable_redemption?: boolean
   /** Whether compliance confirmation has been completed */
@@ -194,6 +214,24 @@ export interface WaffoPaymentRequest {
   amount: number
   /** Optional server-side Waffo payment method index */
   pay_method_index?: number
+}
+
+/**
+ * XorPay payment request parameters
+ */
+export interface XorPayPaymentRequest {
+  /** Topup amount */
+  amount: number
+  /** XorPay scan method (xorpay_native / xorpay_alipay) */
+  payment_method: string
+}
+
+/**
+ * XorPay order status polling request
+ */
+export interface XorPayOrderRequest {
+  /** Merchant order number returned by the pay endpoint */
+  trade_no: string
 }
 
 /**

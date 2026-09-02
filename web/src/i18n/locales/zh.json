@@ -5563,6 +5563,15 @@
     "Zero retention": "零数据保留",
     "Zhipu": "智谱",
     "Zhipu V4": "智谱 V4",
-    "Zoom": "缩放"
+    "Zoom": "缩放",
+    "XorPay Payment": "扫码支付(人民币)",
+    "XorPay Gateway": "XorPay 网关",
+    "Scan to Pay": "扫码支付",
+    "Scan with {{method}} to finish the payment.": "请打开 {{method}} 扫描二维码完成支付。",
+    "QR code expires in {{time}}": "二维码 {{time}} 后失效",
+    "Waiting for payment...": "等待支付结果…",
+    "Payment received. Credits have been added.": "支付成功,额度已到账。",
+    "This QR code has expired. Start a new payment.": "二维码已失效,请重新发起支付。",
+    "Order No.": "订单号"
   }
 }

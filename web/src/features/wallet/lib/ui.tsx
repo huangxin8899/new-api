@@ -154,6 +154,21 @@ export function getPaymentIcon(
           />
         </span>
       )
+    case PAYMENT_TYPES.XORPAY_NATIVE:
+      // XorPay WeChat scan uses the same brand glyph as WeChat Pay.
+      return (
+        <SiWechat
+          className={className}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.WECHAT] }}
+        />
+      )
+    case PAYMENT_TYPES.XORPAY_ALIPAY:
+      return (
+        <SiAlipay
+          className={className}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.ALIPAY] }}
+        />
+      )
     default:
       return <CreditCard className={className} />
   }

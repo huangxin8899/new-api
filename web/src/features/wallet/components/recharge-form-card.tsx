@@ -81,6 +81,10 @@ interface RechargeFormCardProps {
   waffoMinTopup?: number
   onWaffoMethodSelect?: (method: WaffoPayMethod, index: number) => void
   enableWaffoPancakeTopup?: boolean
+  enableXorpayTopup?: boolean
+  xorpayPayMethods?: PaymentMethod[]
+  xorpayMinTopup?: number
+  onXorpayMethodSelect?: (method: PaymentMethod) => void
 }
 
 export function RechargeFormCard({
@@ -111,6 +115,10 @@ export function RechargeFormCard({
   waffoMinTopup,
   onWaffoMethodSelect,
   enableWaffoPancakeTopup,
+  enableXorpayTopup,
+  xorpayPayMethods,
+  xorpayMinTopup,
+  onXorpayMethodSelect,
 }: RechargeFormCardProps) {
   const { t } = useTranslation()
   const [localAmount, setLocalAmount] = useState(topupAmount.toString())
@@ -134,12 +142,15 @@ export function RechargeFormCard({
     topupInfo?.enable_online_topup ||
     topupInfo?.enable_stripe_topup ||
     enableWaffoTopup ||
-    enableWaffoPancakeTopup
+    enableWaffoPancakeTopup ||
+    enableXorpayTopup
   const hasAnyTopup = hasConfigurableTopup || enableCreemTopup
   const hasStandardPaymentMethods =
     Array.isArray(topupInfo?.pay_methods) && topupInfo.pay_methods.length > 0
   const hasWaffoPaymentMethods =
     Array.isArray(waffoPayMethods) && waffoPayMethods.length > 0
+  const hasXorpayPaymentMethods =
+    Array.isArray(xorpayPayMethods) && xorpayPayMethods.length > 0
   const minTopup = getMinTopupAmount(topupInfo)
   const redemptionEnabled = topupInfo?.enable_redemption !== false
 
@@ -384,17 +395,18 @@ export function RechargeFormCard({
                     })}
                   </div>
                 ) : null}
-                {!hasStandardPaymentMethods && !hasWaffoPaymentMethods && (
-                  <Alert>
-                    <AlertDescription>
-                      {t(
-                        'No payment methods available. Please contact administrator.'
-                      )}
-                    </AlertDescription>
-                  </Alert>
-                )}
+                {!hasStandardPaymentMethods &&
+                  !hasWaffoPaymentMethods &&
+                  !hasXorpayPaymentMethods && (
+                    <Alert>
+                      <AlertDescription>
+                        {t(
+                          'No payment methods available. Please contact administrator.'
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
               </div>
-
               {enableWaffoTopup &&
                 hasWaffoPaymentMethods &&
                 onWaffoMethodSelect && (
@@ -462,6 +474,78 @@ export function RechargeFormCard({
 
                         return belowMin ? (
                           <TooltipProvider key={methodKey}>
+                            <Tooltip>
+                              <TooltipTrigger render={button} />
+                              <TooltipContent>{disabledReason}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          button
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+              {enableXorpayTopup &&
+                hasXorpayPaymentMethods &&
+                onXorpayMethodSelect && (
+                  <div className='space-y-2.5 sm:space-y-3'>
+                    <Label className='text-muted-foreground text-xs font-medium tracking-wider uppercase'>
+                      {t('XorPay Payment')}
+                    </Label>
+                    <div className='grid grid-cols-2 gap-1.5 sm:gap-3 lg:grid-cols-3'>
+                      {xorpayPayMethods?.map((method) => {
+                        const xorpayMin = xorpayMinTopup || 0
+                        const belowMin = xorpayMin > topupAmount
+                        const disabledReason = belowMin
+                          ? t('Minimum topup amount: {{amount}}', {
+                              amount: xorpayMin,
+                            })
+                          : undefined
+                        const disabledLabel = belowMin
+                          ? `${t('Minimum:')} ${xorpayMin}`
+                          : undefined
+
+                        const button = (
+                          <Button
+                            key={method.type}
+                            variant='outline'
+                            onClick={() => onXorpayMethodSelect(method)}
+                            disabled={belowMin || !!paymentLoading}
+                            title={disabledReason}
+                            aria-label={
+                              disabledReason
+                                ? `${method.name}. ${disabledReason}`
+                                : method.name
+                            }
+                            className='min-h-14 min-w-0 justify-start gap-2 rounded-lg px-3 py-2 text-left'
+                          >
+                            {paymentLoading === method.type ? (
+                              <Loader2 className='h-4 w-4 animate-spin' />
+                            ) : (
+                              getPaymentIcon(
+                                method.type,
+                                'h-4 w-4',
+                                method.icon,
+                                method.name
+                              )
+                            )}
+                            <span className='flex min-w-0 flex-col items-start gap-0.5'>
+                              <span className='max-w-full truncate'>
+                                {method.name}
+                              </span>
+                              {disabledLabel && (
+                                <span className='text-muted-foreground max-w-full truncate text-[11px] leading-4 font-normal'>
+                                  {disabledLabel}
+                                </span>
+                              )}
+                            </span>
+                          </Button>
+                        )
+
+                        return belowMin ? (
+                          <TooltipProvider key={method.type}>
                             <Tooltip>
                               <TooltipTrigger render={button} />
                               <TooltipContent>{disabledReason}</TooltipContent>

@@ -29,6 +29,7 @@ import { BillingHistoryDialog } from './components/dialogs/billing-history-dialo
 import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
+import { XorPayQrDialog } from './components/dialogs/xorpay-qr-dialog'
 import { RechargeFormCard } from './components/recharge-form-card'
 import { SubscriptionPlansCard } from './components/subscription-plans-card'
 import { WalletStatsCard } from './components/wallet-stats-card'
@@ -41,6 +42,7 @@ import {
   useCreemPayment,
   useWaffoPayment,
   useWaffoPancakePayment,
+  useXorPayPayment,
 } from './hooks'
 import {
   getDefaultPaymentType,
@@ -125,6 +127,9 @@ export function Wallet(props: WalletProps) {
     }
   }, [])
 
+  // XorPay QR payment — fetches the user balance again once paid.
+  const xorpayPayment = useXorPayPayment(fetchUser)
+
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
@@ -202,6 +207,12 @@ export function Wallet(props: WalletProps) {
         regular: processPayment,
         waffo: processWaffoPayment,
         waffoPancake: processWaffoPancakePayment,
+        xorpay: (amount, paymentType) =>
+          xorpayPayment.processXorPay(
+            amount,
+            paymentType,
+            selectedPaymentMethod?.name
+          ),
       }
     )
 
@@ -328,6 +339,10 @@ export function Wallet(props: WalletProps) {
                   enableWaffoPancakeTopup={
                     topupInfo?.enable_waffo_pancake_topup
                   }
+                  enableXorpayTopup={topupInfo?.enable_xorpay_topup}
+                  xorpayPayMethods={topupInfo?.xorpay_pay_methods}
+                  xorpayMinTopup={topupInfo?.xorpay_min_topup}
+                  onXorpayMethodSelect={handlePaymentMethodSelect}
                 />
               </div>
 
@@ -360,9 +375,25 @@ export function Wallet(props: WalletProps) {
         paymentAmount={paymentAmount}
         paymentMethod={selectedPaymentMethod}
         calculating={calculating}
-        processing={processing || waffoProcessing || pancakeProcessing}
+        processing={
+          processing || waffoProcessing || pancakeProcessing || xorpayPayment.processing
+        }
         discountRate={getDiscountRate()}
         usdExchangeRate={effectiveUsdExchangeRate}
+      />
+
+      <XorPayQrDialog
+        open={xorpayPayment.open}
+        onOpenChange={(next) => {
+          if (!next) {
+            xorpayPayment.closeXorPay()
+          }
+        }}
+        phase={xorpayPayment.phase}
+        qrContent={xorpayPayment.qrContent}
+        methodName={xorpayPayment.methodName}
+        tradeNo={xorpayPayment.tradeNo}
+        remainingSeconds={xorpayPayment.remainingSeconds}
       />
 
       <TransferDialog

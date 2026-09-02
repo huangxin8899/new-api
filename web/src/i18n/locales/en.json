@@ -5563,6 +5563,15 @@
     "Zero retention": "Zero retention",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom"
+    "Zoom": "Zoom",
+    "XorPay Payment": "Scan to Pay (CNY)",
+    "XorPay Gateway": "XorPay Gateway",
+    "Scan to Pay": "Scan to Pay",
+    "Scan with {{method}} to finish the payment.": "Scan with {{method}} to finish the payment.",
+    "QR code expires in {{time}}": "QR code expires in {{time}}",
+    "Waiting for payment...": "Waiting for payment...",
+    "Payment received. Credits have been added.": "Payment received. Credits have been added.",
+    "This QR code has expired. Start a new payment.": "This QR code has expired. Start a new payment.",
+    "Order No.": "Order No."
   }
 }

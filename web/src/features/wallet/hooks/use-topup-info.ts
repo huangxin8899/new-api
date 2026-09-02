@@ -192,6 +192,12 @@ export function useTopupInfo() {
         waffo_pay_methods: parseWaffoPayMethods(
           response.data.waffo_pay_methods
         ),
+        xorpay_pay_methods: parsePaymentMethods(
+          response.data.xorpay_pay_methods,
+          response.data.stripe_min_topup
+        ),
+        enable_xorpay_topup: !!response.data.enable_xorpay_topup,
+        xorpay_min_topup: Number(response.data.xorpay_min_topup) || undefined,
       }
 
       setTopupInfo(processedData)

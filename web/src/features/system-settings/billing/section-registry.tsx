@@ -153,6 +153,12 @@ const BILLING_SECTIONS = [
           CreemWebhookSecret: settings.CreemWebhookSecret,
           CreemTestMode: settings.CreemTestMode,
           CreemProducts: settings.CreemProducts,
+          XorPayEnabled: settings.XorPayEnabled ?? false,
+          XorPayAid: settings.XorPayAid ?? '',
+          XorPayAppSecret: settings.XorPayAppSecret ?? '',
+          XorPayNotifyUrl: settings.XorPayNotifyUrl ?? '',
+          XorPayMinTopUp: settings.XorPayMinTopUp ?? 1,
+          XorPayExpire: settings.XorPayExpire ?? 900,
         }}
         waffoDefaultValues={{
           WaffoEnabled: settings.WaffoEnabled ?? false,

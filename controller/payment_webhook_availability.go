@@ -92,6 +92,25 @@ func isWaffoPancakeWebhookEnabled() bool {
 	return isWaffoPancakeTopUpEnabled()
 }
 
+func isXorPayTopUpEnabled() bool {
+	if !isPaymentComplianceConfirmed() {
+		return false
+	}
+	if !setting.XorPayEnabled {
+		return false
+	}
+	return isXorPayWebhookConfigured()
+}
+
+func isXorPayWebhookConfigured() bool {
+	return strings.TrimSpace(setting.XorPayAid) != "" &&
+		strings.TrimSpace(setting.XorPayAppSecret) != ""
+}
+
+func isXorPayWebhookEnabled() bool {
+	return isXorPayTopUpEnabled()
+}
+
 func isEpayTopUpEnabled() bool {
 	if !isPaymentComplianceConfirmed() {
 		return false

@@ -176,6 +176,16 @@ const paymentSchema = z.object({
   WaffoPancakeMerchantID: z.string(),
   WaffoPancakePrivateKey: z.string(),
   WaffoPancakeReturnURL: z.string(),
+  XorPayEnabled: z.boolean(),
+  XorPayAid: z.string(),
+  XorPayAppSecret: z.string(),
+  XorPayNotifyUrl: z.string().refine((value) => {
+    const trimmed = value.trim()
+    if (!trimmed) return true
+    return /^https?:\/\//.test(trimmed)
+  }, 'Provide a valid callback URL starting with http:// or https://'),
+  XorPayMinTopUp: z.coerce.number().min(1),
+  XorPayExpire: z.coerce.number().min(60).max(7200),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
@@ -457,6 +467,12 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         values.WaffoPancakeReturnURL.trim()
       ),
+      XorPayEnabled: values.XorPayEnabled,
+      XorPayAid: values.XorPayAid.trim(),
+      XorPayAppSecret: values.XorPayAppSecret.trim(),
+      XorPayNotifyUrl: values.XorPayNotifyUrl.trim(),
+      XorPayMinTopUp: values.XorPayMinTopUp,
+      XorPayExpire: values.XorPayExpire,
     }
 
     const initial = {
@@ -504,6 +520,12 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         initialRef.current.WaffoPancakeReturnURL.trim()
       ),
+      XorPayEnabled: initialRef.current.XorPayEnabled,
+      XorPayAid: initialRef.current.XorPayAid.trim(),
+      XorPayAppSecret: initialRef.current.XorPayAppSecret.trim(),
+      XorPayNotifyUrl: initialRef.current.XorPayNotifyUrl.trim(),
+      XorPayMinTopUp: initialRef.current.XorPayMinTopUp,
+      XorPayExpire: initialRef.current.XorPayExpire,
     }
 
     const updates: Array<{ key: string; value: string | number | boolean }> = []
@@ -627,6 +649,37 @@ export function PaymentSettingsSection({
       normalizeJsonForComparison(initial.CreemProducts)
     ) {
       updates.push({ key: 'CreemProducts', value: sanitized.CreemProducts })
+    }
+
+    if (sanitized.XorPayEnabled !== initial.XorPayEnabled) {
+      updates.push({ key: 'XorPayEnabled', value: sanitized.XorPayEnabled })
+    }
+
+    if (sanitized.XorPayAid !== initial.XorPayAid) {
+      updates.push({ key: 'XorPayAid', value: sanitized.XorPayAid })
+    }
+
+    // Secret fields are never echoed back, so an empty input means "unchanged".
+    if (
+      sanitized.XorPayAppSecret &&
+      sanitized.XorPayAppSecret !== initial.XorPayAppSecret
+    ) {
+      updates.push({
+        key: 'XorPayAppSecret',
+        value: sanitized.XorPayAppSecret,
+      })
+    }
+
+    if (sanitized.XorPayNotifyUrl !== initial.XorPayNotifyUrl) {
+      updates.push({ key: 'XorPayNotifyUrl', value: sanitized.XorPayNotifyUrl })
+    }
+
+    if (sanitized.XorPayMinTopUp !== initial.XorPayMinTopUp) {
+      updates.push({ key: 'XorPayMinTopUp', value: sanitized.XorPayMinTopUp })
+    }
+
+    if (sanitized.XorPayExpire !== initial.XorPayExpire) {
+      updates.push({ key: 'XorPayExpire', value: sanitized.XorPayExpire })
     }
 
     if (sanitized.WaffoEnabled !== initial.WaffoEnabled) {
@@ -884,6 +937,7 @@ export function PaymentSettingsSection({
                 <TabsTrigger value='creem'>Creem</TabsTrigger>
                 <TabsTrigger value='waffo-pancake'>Waffo Pancake</TabsTrigger>
                 <TabsTrigger value='waffo'>Waffo</TabsTrigger>
+                <TabsTrigger value='xorpay'>XorPay</TabsTrigger>
               </TabsList>
             </div>
 
@@ -1625,6 +1679,160 @@ export function PaymentSettingsSection({
                 payMethods={waffoPayMethods}
                 onPayMethodsChange={setWaffoPayMethods}
               />
+            </TabsContent>
+
+            <TabsContent value='xorpay' className={paymentTabContentClassName}>
+              <div className='space-y-4'>
+                <div>
+                  <h3 className='text-lg font-medium'>{t('XorPay Gateway')}</h3>
+                  <p className='text-muted-foreground text-sm'>
+                    {t(
+                      'WeChat / Alipay QR code payment through XorPay. Amounts use the Epay unit price and currency.'
+                    )}
+                  </p>
+                </div>
+
+                <div className='rounded-md bg-blue-50 p-4 text-sm text-blue-900 dark:bg-blue-950 dark:text-blue-100'>
+                  <p className='mb-2 font-medium'>
+                    {t('Webhook Configuration:')}
+                  </p>
+                  <ul className='list-inside list-disc space-y-1'>
+                    <li>
+                      {t('Webhook URL:')}{' '}
+                      <code className='rounded bg-blue-100 px-1 py-0.5 text-xs dark:bg-blue-900'>
+                        {'<ServerAddress>/api/xorpay/notify'}
+                      </code>
+                    </li>
+                    <li>
+                      {t(
+                        'The notify URL is sent with every order, so it must be publicly reachable.'
+                      )}
+                    </li>
+                  </ul>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name='XorPayEnabled'
+                  render={({ field }) => (
+                    <SettingsSwitchItem>
+                      <SettingsSwitchContent>
+                        <FormLabel>{t('Enable XorPay')}</FormLabel>
+                        <FormDescription>
+                          {t('Show XorPay QR payment on the top-up page')}
+                        </FormDescription>
+                      </SettingsSwitchContent>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </SettingsSwitchItem>
+                  )}
+                />
+
+                <div className='grid gap-6 md:grid-cols-2'>
+                  <FormField
+                    control={form.control}
+                    name='XorPayAid'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('XorPay App ID (aid)')}</FormLabel>
+                        <FormControl>
+                          <Input placeholder='aid' {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          {t('Found in the XorPay dashboard')}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='XorPayAppSecret'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('XorPay App Secret')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='password'
+                            placeholder={t('Enter XorPay app secret')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Used for signing (leave blank unless updating)'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='XorPayNotifyUrl'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('XorPay Notify URL')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder='https://api.example.com/api/xorpay/notify'
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t(
+                            'Leave blank to use the server callback address automatically'
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='XorPayMinTopUp'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Minimum Top-up')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            {...safeNumberFieldProps(field)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name='XorPayExpire'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('QR Code Expiry (seconds)')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type='number'
+                            {...safeNumberFieldProps(field)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t('Between 60 and 7200 seconds')}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </SettingsForm>

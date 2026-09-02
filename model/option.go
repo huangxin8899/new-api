@@ -129,6 +129,12 @@ func InitOptionMap() {
 	common.OptionMap["WaffoPancakeMinTopUp"] = strconv.Itoa(setting.WaffoPancakeMinTopUp)
 	common.OptionMap["WaffoPancakeStoreID"] = setting.WaffoPancakeStoreID
 	common.OptionMap["WaffoPancakeProductID"] = setting.WaffoPancakeProductID
+	common.OptionMap["XorPayEnabled"] = strconv.FormatBool(setting.XorPayEnabled)
+	common.OptionMap["XorPayAid"] = setting.XorPayAid
+	common.OptionMap["XorPayAppSecret"] = setting.XorPayAppSecret
+	common.OptionMap["XorPayNotifyUrl"] = setting.XorPayNotifyUrl
+	common.OptionMap["XorPayMinTopUp"] = strconv.Itoa(setting.XorPayMinTopUp)
+	common.OptionMap["XorPayExpire"] = strconv.Itoa(setting.XorPayExpire)
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["AutoGroups"] = setting.AutoGroups2JsonString()
@@ -528,6 +534,18 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.WaffoPancakeUnitPrice, _ = strconv.ParseFloat(value, 64)
 	case "WaffoPancakeMinTopUp":
 		setting.WaffoPancakeMinTopUp, _ = strconv.Atoi(value)
+	case "XorPayEnabled":
+		setting.XorPayEnabled = value == "true"
+	case "XorPayAid":
+		setting.XorPayAid = value
+	case "XorPayAppSecret":
+		setting.XorPayAppSecret = value
+	case "XorPayNotifyUrl":
+		setting.XorPayNotifyUrl = value
+	case "XorPayMinTopUp":
+		setting.XorPayMinTopUp, _ = strconv.Atoi(value)
+	case "XorPayExpire":
+		setting.XorPayExpire, _ = strconv.Atoi(value)
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":

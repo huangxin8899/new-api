@@ -335,6 +335,12 @@ export type BillingSettings = {
   // section (saved via /api/option/waffo-pancake/save).
   WaffoPancakeStoreID: string
   WaffoPancakeProductID: string
+  XorPayEnabled: boolean
+  XorPayAid: string
+  XorPayAppSecret: string
+  XorPayNotifyUrl: string
+  XorPayMinTopUp: number
+  XorPayExpire: number
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number

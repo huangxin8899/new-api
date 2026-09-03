@@ -84,6 +84,45 @@ func xorPayPrice(money float64) string {
 	return decimal.NewFromFloat(money).RoundBank(2).StringFixed(2)
 }
 
+// xorPayMoney 计算 XorPay(人民币渠道)应收的人民币金额。
+//
+// 与易支付共用 getPayMoney 时按 operation_setting.Price 计算；而美元计费站点
+// Price 被设为 1(每 $1 额度 = $1)，XorPay 若沿用会直接把美元当人民币收(少收汇率差)。
+// 这里把金额先归一成美元基准额(与 getPayMoney 一致：TOKENS 显示时 ÷QuotaPerUnit)，
+// 再乘配置的 USD→人民币汇率换算成 CNY；分组倍率与满减折扣照常保留。
+//
+// 入账仍按订单 Amount(美元基准)记额度，与应收币种无关，故只影响应收/回调金额。
+func xorPayMoney(amount int64, group string) float64 {
+	dAmount := decimal.NewFromInt(amount)
+	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
+		dAmount = dAmount.Div(decimal.NewFromFloat(common.QuotaPerUnit))
+	}
+
+	topupGroupRatio := common.GetTopupGroupRatio(group)
+	if topupGroupRatio == 0 {
+		topupGroupRatio = 1
+	}
+
+	// 汇率优先用配置的 USDExchangeRate；未配置时回退到 Price(经典人民币计费语义)
+	rate := operation_setting.USDExchangeRate
+	if rate <= 0 {
+		rate = operation_setting.Price
+	}
+
+	discount := 1.0
+	if ds, ok := operation_setting.GetPaymentSetting().AmountDiscount[int(amount)]; ok {
+		if ds > 0 {
+			discount = ds
+		}
+	}
+
+	payMoney := dAmount.
+		Mul(decimal.NewFromFloat(rate)).
+		Mul(decimal.NewFromFloat(topupGroupRatio)).
+		Mul(decimal.NewFromFloat(discount))
+	return payMoney.InexactFloat64()
+}
+
 func xorPayNotifyUrl() string {
 	if u := strings.TrimSpace(setting.XorPayNotifyUrl); u != "" {
 		return u
@@ -184,7 +223,7 @@ func RequestXorPayAmount(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "获取用户分组失败"})
 		return
 	}
-	payMoney := getPayMoney(req.Amount, group)
+	payMoney := xorPayMoney(req.Amount, group)
 	if payMoney < 0.01 {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "充值金额过低"})
 		return
@@ -223,7 +262,7 @@ func RequestXorPayPay(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "获取用户分组失败"})
 		return
 	}
-	payMoney := getPayMoney(req.Amount, group)
+	payMoney := xorPayMoney(req.Amount, group)
 	if payMoney < 0.01 {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "充值金额过低"})
 		return

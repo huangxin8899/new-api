@@ -150,28 +150,33 @@ export function Wallet(props: WalletProps) {
       setTopupAmount(minTopup)
 
       // Calculate initial payment amount with default payment type
-      const defaultPaymentType = getDefaultPaymentType(topupInfo)
+      const defaultPaymentType = getDefaultPaymentType(topupInfo, minTopup)
       calculatePaymentAmount(minTopup, defaultPaymentType)
     }
   }, [topupInfo, calculatePaymentAmount])
 
-  // Get current payment type (selected or default)
-  const getCurrentPaymentType = useCallback(() => {
-    return selectedPaymentMethod?.type || getDefaultPaymentType(topupInfo)
-  }, [selectedPaymentMethod, topupInfo])
+  // Get current payment type (selected or default).
+  // `amount` is the value being previewed: pass it so the default type skips
+  // channels whose own threshold is above the amount (Stripe min 10 vs XorPay 1).
+  const getCurrentPaymentType = useCallback(
+    (amount?: number) =>
+      selectedPaymentMethod?.type ||
+      getDefaultPaymentType(topupInfo, amount ?? topupAmount),
+    [selectedPaymentMethod, topupInfo, topupAmount]
+  )
 
   // Handle preset selection
   const handleSelectPreset = (preset: PresetAmount) => {
     setTopupAmount(preset.value)
     setSelectedPreset(preset.value)
-    calculatePaymentAmount(preset.value, getCurrentPaymentType())
+    calculatePaymentAmount(preset.value, getCurrentPaymentType(preset.value))
   }
 
   // Handle topup amount change
   const handleTopupAmountChange = (amount: number) => {
     setTopupAmount(amount)
     setSelectedPreset(null)
-    calculatePaymentAmount(amount, getCurrentPaymentType())
+    calculatePaymentAmount(amount, getCurrentPaymentType(amount))
   }
 
   // Handle payment method selection

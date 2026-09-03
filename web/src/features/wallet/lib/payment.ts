@@ -140,66 +140,95 @@ export async function dispatchSelectedPayment(
 }
 
 /**
- * Get default payment type from topup info
+ * Get default payment type from topup info.
+ *
+ * When `amount` is provided, only returns a channel whose own minimum is
+ * reachable (≤ amount). Without it, an enabled high-threshold channel (e.g.
+ * Stripe min 10) used to be picked as default and the amount preview for a low
+ * amount (e.g. XorPay at 1) would be rejected by the backend. Passing the
+ * amount lets the no-selection preview land on a payable channel (XorPay).
  */
-export function getDefaultPaymentType(topupInfo: TopupInfo | null): string {
+export function getDefaultPaymentType(
+  topupInfo: TopupInfo | null,
+  amount?: number
+): string {
   if (!topupInfo) {
     return DEFAULT_PAYMENT_TYPE
   }
 
-  // Return first available payment method or default
-  if (topupInfo.pay_methods?.length > 0) {
-    return topupInfo.pay_methods[0].type
+  const reachable = (min: number | undefined): boolean => {
+    if (amount == null) return true
+    const n = Number(min)
+    return !(n > 0) || amount >= n
   }
 
-  if (topupInfo.enable_stripe_topup) {
+  // Return first available payment method reachable by the amount
+  if (topupInfo.pay_methods?.length > 0) {
+    const hit = topupInfo.pay_methods.find((m) => reachable(m.min_topup))
+    if (hit) {
+      return hit.type
+    }
+  }
+
+  if (topupInfo.enable_stripe_topup && reachable(topupInfo.stripe_min_topup)) {
     return PAYMENT_TYPES.STRIPE
   }
 
-  if (topupInfo.enable_waffo_topup) {
+  if (topupInfo.enable_waffo_topup && reachable(topupInfo.waffo_min_topup)) {
     return PAYMENT_TYPES.WAFFO
   }
 
-  if (topupInfo.enable_waffo_pancake_topup) {
+  if (
+    topupInfo.enable_waffo_pancake_topup &&
+    reachable(topupInfo.waffo_pancake_min_topup)
+  ) {
     return PAYMENT_TYPES.WAFFO_PANCAKE
   }
 
-  if (topupInfo.enable_xorpay_topup) {
+  if (topupInfo.enable_xorpay_topup && reachable(topupInfo.xorpay_min_topup)) {
     return PAYMENT_TYPES.XORPAY_NATIVE
   }
 
-  return DEFAULT_PAYMENT_TYPE
+  return topupInfo.pay_methods?.[0]?.type || DEFAULT_PAYMENT_TYPE
 }
 
 /**
- * Get minimum topup amount from topup info
+ * Get minimum topup amount for the amount box: the lowest threshold among all
+ * enabled channels. Previously this returned the first enabled channel's
+ * threshold by priority, so an enabled Stripe (min 10) locked the whole amount
+ * box to 10 and blocked low amounts through XorPay (min 1). Higher per-channel
+ * thresholds are now handled by disabling that channel's own method buttons.
  */
 export function getMinTopupAmount(topupInfo: TopupInfo | null): number {
   if (!topupInfo) {
     return DEFAULT_MIN_TOPUP
   }
 
+  const minValues: number[] = []
+  const pushMin = (value: number | undefined): void => {
+    const n = Number(value)
+    if (Number.isFinite(n) && n > 0) {
+      minValues.push(n)
+    }
+  }
+
   if (topupInfo.enable_online_topup) {
-    return topupInfo.min_topup
+    pushMin(topupInfo.min_topup)
   }
-
   if (topupInfo.enable_stripe_topup) {
-    return topupInfo.stripe_min_topup
+    pushMin(topupInfo.stripe_min_topup)
   }
-
   if (topupInfo.enable_waffo_topup) {
-    return topupInfo.waffo_min_topup || DEFAULT_MIN_TOPUP
+    pushMin(topupInfo.waffo_min_topup)
   }
-
   if (topupInfo.enable_waffo_pancake_topup) {
-    return topupInfo.waffo_pancake_min_topup || DEFAULT_MIN_TOPUP
+    pushMin(topupInfo.waffo_pancake_min_topup)
   }
-
   if (topupInfo.enable_xorpay_topup) {
-    return topupInfo.xorpay_min_topup || DEFAULT_MIN_TOPUP
+    pushMin(topupInfo.xorpay_min_topup)
   }
 
-  return DEFAULT_MIN_TOPUP
+  return minValues.length > 0 ? Math.min(...minValues) : DEFAULT_MIN_TOPUP
 }
 
 /**
